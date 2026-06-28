@@ -1,2 +1,0 @@
-this is the file created on my personal pc, now I'll be commit and pushing it from here, 
-and will pull this when I open the repo on my other laptop.
