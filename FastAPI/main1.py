@@ -300,15 +300,17 @@ def login(request: LoginRequest):
 
 
 
-def get_current_user(authorization: str = Header()):
+def get_current_user(authorization: str = Header(default= None)):
+    if authorization is None:
+        raise HTTPException(status_code= 401, detail= "Not authenticated")
     try:
         token = authorization.split(" ")[1]
 
-        payload = jwt.decode(token, SECRET_KEY, algorithm)
+        payload = jwt.decode(token, SECRET_KEY, algorithms= [ALGORITHM])
 
         username = payload.get("username")
 
-        if not username:
+        if username is None:
             raise HTTPException(status_code= 401, detail= "Invalid token")
         
         return username
@@ -317,7 +319,7 @@ def get_current_user(authorization: str = Header()):
 
 
 @app.get("/protected")
-def protected_route(current_user = Depends()):
+def protected_route(current_user = Depends(get_current_user)):
     return{
         "message": f"Hello {current_user}, you are authenticated."
     }
