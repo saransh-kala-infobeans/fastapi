@@ -22,6 +22,37 @@ class LoginRequest(BaseModel):
 app = FastAPI()
 tasks : list[Task] = []
 
+#for authorization., putting this above here, because of python's syntax thing, if I am function from some another function,
+#then the called function should be present in the code BEFORE/ABOVE the calling function.
+def get_current_user(authorization: str = Header(default= None)):
+    if authorization is None:
+        raise HTTPException(status_code= 401, detail= "Not authenticated")
+
+    
+    #found during testing. that authorization.split(" ")[1] could throw error resulting in internal server error.
+    #occurs when user only write "Bearer" (no token).
+
+    #this code helps us surpass that problem.
+    parts = authorization.split(" ")
+    if len(parts) != 2 or parts[0] != "Bearer":
+        raise HTTPException(status_code=401, detail="Invalid authorization format. Use: Bearer <token>")
+
+    try:
+        #earlier
+        #token = authorization.split(" ")[1]
+
+        token = parts[1]
+        payload = jwt.decode(token, SECRET_KEY, algorithms= [ALGORITHM])
+        username = payload.get("username")
+
+        if username is None:
+            raise HTTPException(status_code= 401, detail= "Invalid token")
+        
+        return username
+    except JWTError:
+        raise HTTPException(status_code= 401, detail= "Invalid or expired token")
+
+
 
 @app.get("/")   #this whole thing = decorater
 def home():  #handler function
@@ -114,7 +145,7 @@ def get_all_tasks():
     }
 
 @app.post("/tasks")
-def add_task(task : Task):
+def add_task(task : Task, current_user = Depends(get_current_user)):
     for t in tasks:
         if t.taskID == task.taskID:
             raise HTTPException(
@@ -283,9 +314,10 @@ def create_token(data: dict):
 
 @app.post("/login")
 def login(request: LoginRequest):
-    #check if user exits.
+    #check if user exits. 
     user = fake_users.get(request.username)
 
+    #check if user exists in database, using their username.
     if not user:
         raise HTTPException(status_code= 401, detail= "Invalid credentials")
     
@@ -297,26 +329,6 @@ def login(request: LoginRequest):
     return {
         "access_token" : token
     }
-
-
-
-def get_current_user(authorization: str = Header(default= None)):
-    if authorization is None:
-        raise HTTPException(status_code= 401, detail= "Not authenticated")
-    try:
-        token = authorization.split(" ")[1]
-
-        payload = jwt.decode(token, SECRET_KEY, algorithms= [ALGORITHM])
-
-        username = payload.get("username")
-
-        if username is None:
-            raise HTTPException(status_code= 401, detail= "Invalid token")
-        
-        return username
-    except JWTError:
-        raise HTTPException(status_code= 401, detail= "Invalid or expired token")
-
 
 @app.get("/protected")
 def protected_route(current_user = Depends(get_current_user)):

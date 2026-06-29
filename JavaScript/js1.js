@@ -239,4 +239,14 @@ pm.collectionVariables.set("userId", 5);    // similar, scoped to collection ins
   pm.expect(object).to.have.property(propertyName);
   pm.expect(user).to.have.property(name);
 
+  //.equal and .eql   
+  .equal checks strict equality, (===),
+  .eql checks deep equality (compares contents of objs and arrays)
+
+EXAMPLE:
+  const a = {name: "Saransh"};
+  const b = {name: "Saransh"};
+
+  pm.expect(a).to.equal(b); // ❌ different objects in memory
+  pm.expect(a).to.eql(b);   // ✅ same contents
 */
