@@ -18,6 +18,9 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class RegisterRequest(BaseModel):
+    username : str
+    password : str
 
 app = FastAPI()
 tasks : list[Task] = []
@@ -51,7 +54,6 @@ def get_current_user(authorization: str = Header(default= None)):
         return username
     except JWTError:
         raise HTTPException(status_code= 401, detail= "Invalid or expired token")
-
 
 
 @app.get("/")   #this whole thing = decorater
@@ -257,14 +259,6 @@ TOKEN_EXPIRE_MINUTES = 30
 #schemes["bcrypt"] <- tells which hashing algorithm to use. brypt is one of the most trusted and widely used algorithm for hasing passwords.
 pwd_context = CryptContext(schemes=["bcrypt"])
 
-#setting up a fake user
-fake_users = {
-    "john": {
-        "username": "john",
-        "hashed_password": pwd_context.hash("1234")  # hashing the password
-    }
-}
-
 # what is .hash()
 #hasing is a one way transofrmation of a string into a fixed scrambled output. meaning,
 # pwd_context.hash("1234")  →  "$2b$12$eKpBMqvQdnO1qmRtW9vXuOWRkl..."
@@ -301,6 +295,42 @@ fake_users = {
 ##ACTUAL IMPLEMENTATION NOW
 ##LOGIN ENDPOINT.
 ##A LoginRequest class has been made (on the top of the code, in this file)
+
+#setting up a in-memory database for users.
+fake_users = {
+    "john": {
+        "username": "john",
+        "hashed_password": pwd_context.hash("1234")  # hashing the password
+    }
+}
+
+@app.post("/register")
+def register(req : RegisterRequest):
+    if not req.password:
+        raise HTTPException(
+            status_code= 400, 
+            detail= "The password field cannot be empty."
+        )
+    if len(req.password) < 8:
+        raise HTTPException(
+            status_code= 400,
+            detail= "The password length must be >= 8."
+        )
+
+    if req.username in fake_users:
+        raise HTTPException(
+            status_code= 409,
+            detail= "User with this username already exists in user database."
+        )
+
+    fake_users[req.username]= {
+        "username" : req.username,
+        "hashed_password" : pwd_context.hash(req.password)
+    }
+
+    return {
+        "result" : f"{req.username} registered successfully." 
+    }
 
 def create_token(data: dict):
     to_encode = data.copy()
