@@ -360,6 +360,7 @@ def login(request: LoginRequest):
         "access_token" : token
     }
 
+#just to be able to commit on git
 @app.get("/protected")
 def protected_route(current_user = Depends(get_current_user)):
     return{
