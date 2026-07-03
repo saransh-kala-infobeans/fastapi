@@ -4,10 +4,12 @@
 
 
 from fastapi import FastAPI, Header, HTTPException, Request, Depends
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+from typing import Annotated
 
 class Task(BaseModel):
     taskID : int
@@ -365,4 +367,12 @@ def login(request: LoginRequest):
 def protected_route(current_user = Depends(get_current_user)):
     return{
         "message": f"Hello {current_user}, you are authenticated."
+    }
+
+# OAuth2 Starts from here.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl= 'token')
+@app.get("/temp-items")
+def temp_read_items(token : Annotated[str, Depends(oauth2_scheme)]):
+    return {
+        "token" : token
     }
