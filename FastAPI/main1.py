@@ -11,6 +11,10 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Annotated
 
+#Pydantic is a popular Python library used for data validation and parsing. It ensures that the data flowing into and out of your application matches the expected types and formats, making your code significantly more robust. BaseModel is the core class in Pydantic that you inherit from to define the structure of your data.
+
+#Better to use Pydantic rather than Dataclasses because dataclasses doesn't provide build-in validation and also doesn't enforce typehints at runtime..
+
 class Task(BaseModel):
     taskID : int
     title : str
