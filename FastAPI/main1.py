@@ -80,6 +80,8 @@ Authorization: Bearer abc123
 '''
 @app.get("/about")
 def about(header_object = Header()):
+    #remember, Header() is not a constructor, it's a function, or to say a factory function provided by fastAPI, which returns a special python that tells fastapi to extract the perimeter form request headers.
+    #Python exectues Header() once, when the function is defined, not when the request arrives.
     return {
         "header-object_information" : header_object,
         "result" : "welcome, this is the about route"
