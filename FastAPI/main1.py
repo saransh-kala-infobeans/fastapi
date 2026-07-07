@@ -376,9 +376,9 @@ def protected_route(current_user = Depends(get_current_user)):
     }
 
 # OAuth2 Starts from here.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl= 'token')
-@app.get("/temp-items")
-def temp_read_items(token : Annotated[str, Depends(oauth2_scheme)]):
-    return {
-        "token" : token
-    }
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl= 'token')
+# @app.get("/temp-items")
+# def temp_read_items(token : Annotated[str, Depends(oauth2_scheme)]):
+#     return {
+#         "token" : token
+#     }

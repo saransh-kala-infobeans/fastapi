@@ -1,0 +1,75 @@
+say we create a statement object,
+stmt = select(users).where(users.c.age > 18)
+
+but, this is just an Select statement object, NOT SQL.
+but what if we wanna see the SQL, that will be generated after compilation?
+we can see that,
+
+//method 1
+print(stmt)   
+-> simply pass the statement object in the print function.
+result:
+    SELECT users.id, users.username, users.age, users.email 
+    FROM users 
+    WHERE users.age > :age_1
+
+but wait, what's ":age_1" ?? 
+it is the parameter that dialect has generated, this helps prevent any sort of SQL injection. the value is stored separately as a bound parameter.
+
+//method 2
+from sqlalchemy.dialects import postgresql
+print(
+    stmt.compile(dialect= postgresql.dialect())
+)
+
+//what about the parameters? what if we want to see those?
+
+print(
+    stmt.compile().params 
+    or 
+    stmt.compile(dialect= postgresql.dialect()).params     //this will require the import statement to get dialects.
+)
+
+
+//what if I want to see the sql query without any query parameters.
+print(
+    stmt.compile(
+        postgresql.dialect(), compile_kwargs= {"literal_binds": True}
+        )
+)
+
+
+---------------------------------------
+DATABASE_URL = (
+    "postgresql+psycopg://postgres:password@localhost:5432/shop"
+)       ↑          ↑        ↑          ↑        ↑       ↑    ↑
+.       |          |        |          |        |       |    |
+     Dialect    Driver     username   pass    host    port   database_name
+
+Environment variables. 
+They're just dynamically set key-value pairs that live outside your application code.
+
+Okay... then what's a .env file?
+Imagine you have 20 environment variables.
+Typing them manually into Windows every time would be annoying.
+Instead, developers keep them in a 
+.env file    
+    DATABASE_URL=postgresql+psycopg://postgres:mypassword@localhost:5432/shop
+    SECRET_KEY=abcdef123456
+    DEBUG=True
+
+No python, no quotes, just KEY=VALUE
+*advise : avoid using spaces in key=value pairs, key=value is better than key = value,
+and some language don't ignore the sapces around the '=' operator.
+
+remember, python cannot read a .env file by itself. Python only knows how to read environment variables from the operating system.
+
+Someone has to:
+    Open it.
+    Read it.
+    Tell the operating system (or your Python process), "Here are the variables."
+
+That's where a library comes in.
+
+What does python-dotenv do?
+It reads your .env file and loads those values into your program so that os.getenv() can retrieve them.

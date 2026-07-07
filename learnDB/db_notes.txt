@@ -1,0 +1,71 @@
+Transaction:
+    A group of database operations that should succeed or fail as a single unit.
+    Either all statements succeed.
+    or 
+    None of them happen.
+
+ex: a banking application database. table name = accounts
+    id |  name  | balance
+    1  |  Alice |  1000$
+    2  |  Bob   |   500$
+
+    //say alices pay bob $200.
+
+    we have to do, 
+    For alice:
+    UPDATE accounts 
+    SET balance = balance - 200 
+    WHERE id= 1;
+
+    For bob:
+    UPDATE accounts 
+    SET balance = balance + 200
+    WHERE id= 2;
+
+Imagine the system crashes right after we update alices balace. 
+THIS IS THE PROBLEM. Now alice just has 200 less than what she had ealier.
+That is why we have Transactions.
+
+--------
+COMMIT: tells the database, eveything looks good, make these changes permanent.
+--------
+CASE 1-
+    Update alice  //alice updated, not saved permanently yet.
+    Upate bob    // bob updated, not saved permanently yet.
+    COMMIT      // You see all these changes, make them permanent now.
+
+    bofore commit, the changes aren't permanent.
+
+CASE 2-
+    Update alice  //alice updated, not saved permanently yet.
+    Upate bob    // bob updated, not saved permanently yet.
+    CRASHHHH!!
+    Rollback    // everything back to how it was, both the updates undone.
+
+
+Suppose we write;
+with engine.begin() as conn:
+    conn.execute(...) //statement 1
+    conn.execute(...) // statement 2
+
+Case 1-                              Case 2-
+BEGIN                                BEGIN 
+↓                                      ↓
+Execute Statement 1                  Execute Statement 1
+↓                                      ↓     
+Execute Statement 2                  Execute Statement 2
+↓                                      ↓
+COMMIT                               Exception
+                                       ↓
+                                     Rollback
+
+Transactions are applied by PostgreSQL, not SQLAlchemy, 
+SQLAlchemy just tells PostgreSQL, BEGIN, COMMIT, ROLLBACK at times.
+
+ACID | The database guaranntees the ACID properties.
+-Atomicity → All or nothing.
+-Consistency → Database remains valid before and after the transaction.
+-Isolation → Concurrent transactions don't interfere incorrectly.
+-Durability → Once committed, changes survive crashes.
+
+
