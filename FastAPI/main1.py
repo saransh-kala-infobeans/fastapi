@@ -28,7 +28,29 @@ class RegisterRequest(BaseModel):
     username : str
     password : str
 
-app = FastAPI()
+app = FastAPI(
+    title= "Saransh's API project",
+    summary= "This is the summary",
+    description="""
+## HEHE double hash.
+**inside the double asterisk right now**
+
+##YO
+""",
+version="1.2.3.4",
+terms_of_service="https://google.com",
+contact={
+    "name" : "Saransh kala",
+    "email" : "saransh@contact.com"
+},
+license_info={
+    "name": "FastAPI documentation link",
+    "url":"https://fastapi.tiangolo.com/",
+}
+)
+
+
+
 tasks : list[Task] = []
 
 #for authorization., putting this above here, because of python's syntax thing, if I am function from some another function,
