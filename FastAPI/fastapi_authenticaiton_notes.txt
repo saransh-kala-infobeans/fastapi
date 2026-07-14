@@ -187,3 +187,29 @@ Token valid   → returns user → passed into handler
 Handler function runs normally
 
 -> Depends() is just a way of saying "this route has a prerequisite — run this function first."
+
+we did so much till now, but still haven't yet seen api key till now, what is it,   
+
+import os 
+from dotenv import load_dotenv
+from pathlib import Path 
+from sqlalchemy import create_engine
+
+loaded= load_dotenv()
+if not loaded:
+  raise HTTPException(
+    status_code= 500,
+    detail= "Internal server error, sorry, the envirionment variables couldn't be configued, hence the request was not served.
+  )
+
+DATABASE_URL= os.getenv("DATABASE_URL") 
+
+#creating the engine using the database url.
+engine= create_engine("DATABASE_URL")
+
+#incase if you'd want to see the compliled sql statements during execution, you can enble them by enabling the boolean perimeter 'echo' to be True in the arguments, this will make sure that once the statement objects are complied into raw SQL by SQLAlchemy/dialect, the sql queries are made visible to the user as well. 
+
+remember that database integration isn't necessary to learn fastapi, but it is the recommended way, as in real world you WILL BE dealing with databases, not the in-memory storage (obviously).
+
+Hence for that matter, we'll be using PostgreSQL as the database management tool, and we ca integrate it into our API using python's SQLAlchemy library, making it easiler to access our database, we can use either of ORM or Core (Both are part of sqlalchemy). SQLAlchemy Core is the older than ORM, additionally, ORM is build on top of Core, hence ORM is more abstract, meaning, it is comparatively more easiler to use from user's perspective.
+ORM, Object relational mapper, lets us map python object to database rows and python class to database tables. that's the beauty of ORM. 
