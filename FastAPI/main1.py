@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 #Pydantic is a popular Python library used for data validation and parsing. It ensures that the data flowing into and out of your application matches the expected types and formats, making your code significantly more robust. BaseModel is the core class in Pydantic that you inherit from to define the structure of your data.
@@ -88,12 +88,12 @@ def about(header_object = Header()):
     } 
 '''
 Explanation about the header object.
-basically, we use this technique, when we want a specific named header from all the headers.
+basically, we use this technique, when we want a specific named header from all the headers received in the request..
 Header() : FastAPI dependency for reading headers.
 means, when we write  
     header_object = Header() in the parameter.
-we are asking fastAPI, that, go to the headers, which came along with the request, and find me 
-the one which is named as 'head-object', once found, put the value associated with this head-object inside
+we are asking fastAPI, that, go to the headers, which were received along with the request, and find me 
+the one which is named as 'header-object', once found, put the value associated with this head-object inside
 the header_object variable present in the parameter.
 
 say we sent a request which has headers like:
@@ -105,7 +105,7 @@ also, this process is case-insensitive, meaning, | HEADER_object: hello  |<== th
 
 
 (notice, underscore became hyphen, fastAPI converts this automatically. 
-because convential way to give names to headers is something-something we just use underscore in code because 
+because convential way to give names to headers is something-something.. we just use underscore in code because 
 python doesn't allow the put hyphen in variable names, fastAPI helps us by later converting/using it as hyphen.)
 
 one more thing about header, they are always received as text, it is fastAPI which coverts them
@@ -132,7 +132,7 @@ here, Once fastAPI see type hint as 'Request' here, it'll automatically put the 
 These is NOT a query/path parameter.
 then you can use, 
 request.headers, it behaves like a dictionary.
-    request.headers["header-objects"]
+    request.headers["header-object"]
     request.headers.get("header-object")
 
 request.url    etc things.
@@ -262,22 +262,22 @@ SECRET_KEY = "mysecretkey123"
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_MINUTES = 30
 
-#password hasing setup
+#password hashing setup
 #CryptContext is a hashing utility from the passlib library. We're creating an instanse of it and storing it in pwd_context.
-#schemes["bcrypt"] <- tells which hashing algorithm to use. brypt is one of the most trusted and widely used algorithm for hasing passwords.
+#schemes["bcrypt"] <- tells which hashing algorithm to use. brypt is one of the most trusted and widely used algorithm for hashing passwords.
 pwd_context = CryptContext(schemes=["bcrypt"])
 
 # what is .hash()
-#hasing is a one way transofrmation of a string into a fixed scrambled output. meaning,
+#hashing is a one way transformation of a string into a fixed scrambled output. meaning,
 # pwd_context.hash("1234")  →  "$2b$12$eKpBMqvQdnO1qmRtW9vXuOWRkl..."
 #ONE-WAY means, you can never reverse it back to 1234. EVER. So when a user logs in with password "1234", instead of doing "1234"=="1234"
 #we do, pwd_context.verify("1234", hased_password)
-#verify hashes the incoming password, and compared it with the stored hash-- without ever storing or comparing plain text.
+#what verify does is, it hashes the incoming password, and compares it with the stored hash-- without ever storing or comparing plain text.
 
 #WHY do we not store plain text?
 #Because, if your database ever gets hacked.
 #then if the pass is stored as a plain text, the hacker can directly see it, game over.
-#hence we store hashed password.   
+#hence we store hashed password.
 
 #REMEMBER ONE THING
 #
@@ -297,12 +297,12 @@ pwd_context = CryptContext(schemes=["bcrypt"])
 #         ↓
 # extract salt from "$2b$12$<salt><hash>"
 #         ↓
-# "1234" + extracted_salt  →  bcrypt  →  compare with stored  →  match ✅
+# "1234" + extracted_salt  →  bcrypt  →  compare with stored  →  match 
 
 
 ##ACTUAL IMPLEMENTATION NOW
 ##LOGIN ENDPOINT.
-##A LoginRequest class has been made (on the top of the code, in this file)
+##A LoginRequest class has been made (on the top of the code in this module itself)
 
 #setting up a in-memory database for users.
 fake_users = {
@@ -319,6 +319,8 @@ def register(req : RegisterRequest):
             status_code= 400, 
             detail= "The password field cannot be empty."
         )
+    
+    #status code 400 : BAD REQUEST ERROR, the server cannot process the request due to client side errors.
     if len(req.password) < 8:
         raise HTTPException(
             status_code= 400,
@@ -342,7 +344,7 @@ def register(req : RegisterRequest):
 
 def create_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=TOKEN_EXPIRE_MINUTES)
     to_encode["exp"] = expire   #to_encode = {"username": ___ , "exp": ___ }
     return jwt.encode(to_encode, SECRET_KEY, algorithm= ALGORITHM)
 #to_encode ===> payload
