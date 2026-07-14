@@ -53,7 +53,7 @@ license_info={
 
 tasks : list[Task] = []
 
-#for authorization., putting this above here, because of python's syntax thing, if I am function from some another function,
+#for authorization., putting this above here, because of python's syntax thing, if we call a function from some another function,
 #then the called function should be present in the code BEFORE/ABOVE the calling function.
 def get_current_user(authorization: str = Header(default= None)):
     if authorization is None:
